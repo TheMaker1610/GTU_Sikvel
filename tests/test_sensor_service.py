@@ -28,3 +28,8 @@ class TestSensorService:
             assert readings["rpm"] > 0
             assert readings["exhaust_temp"] > 0
             assert readings["fuel_flow"] > 0
+
+    def test_poll_nominal_midpoints(self):
+        service = SensorService(noise_level=0.0, anomaly_probability=0.0)
+        readings = service.poll()
+        assert readings["rpm"] == pytest.approx(8000.0, rel=0.01)
