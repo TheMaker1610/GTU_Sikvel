@@ -18,3 +18,8 @@ def _r(**kwargs) -> dict:
     }
     base.update(kwargs)
     return base
+
+
+class TestModeClassifier:
+    def test_stop(self, classifier):
+        assert classifier.classify(_r(rpm=0, fuel_flow=0)) == "STOP"
