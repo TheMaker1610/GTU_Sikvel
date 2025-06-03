@@ -12,4 +12,11 @@ from server.auth.auth_service import (
 
 
 class TestPasswordHashing:
-    pass
+    def test_hash_and_verify(self):
+        password = "SecurePass123!"
+        hashed = hash_password(password)
+        assert verify_password(password, hashed)
+
+    def test_wrong_password(self):
+        hashed = hash_password("correct_password")
+        assert not verify_password("wrong_password", hashed)
