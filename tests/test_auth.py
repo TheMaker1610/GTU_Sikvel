@@ -46,3 +46,4 @@ class TestJWT:
         token = create_access_token(data, expires_delta=timedelta(seconds=-1))
         payload = decode_token(token)
         assert payload is None
+
