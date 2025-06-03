@@ -40,3 +40,4 @@ class TestModeClassifier:
         readings = _r(rpm=1495, exhaust_temp=174, inlet_pressure=108.9,
                       fuel_flow=241, vibration=1.04, iga_position=37.4)
         assert classifier.classify(readings) == "START"
+
