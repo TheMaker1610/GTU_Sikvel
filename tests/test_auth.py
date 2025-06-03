@@ -39,3 +39,10 @@ class TestJWT:
     def test_invalid_token(self):
         payload = decode_token("invalid.token.here")
         assert payload is None
+
+    def test_expired_token(self):
+        from datetime import timedelta
+        data = {"sub": "user"}
+        token = create_access_token(data, expires_delta=timedelta(seconds=-1))
+        payload = decode_token(token)
+        assert payload is None
