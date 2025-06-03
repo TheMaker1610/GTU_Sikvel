@@ -16,3 +16,8 @@ class TestSensorService:
         readings = sensor_service.poll()
         for name in SENSOR_NAMES:
             assert name in readings, f"Датчик {name} отсутствует в показаниях"
+
+    def test_poll_returns_floats(self, sensor_service):
+        readings = sensor_service.poll()
+        for name, value in readings.items():
+            assert isinstance(value, float), f"Значение {name} не является числом"
