@@ -35,3 +35,7 @@ class TestJWT:
         assert payload is not None
         assert payload["sub"] == "test_user"
         assert payload["role"] == "operator"
+
+    def test_invalid_token(self):
+        payload = decode_token("invalid.token.here")
+        assert payload is None
