@@ -28,4 +28,10 @@ class TestPasswordHashing:
 
 
 class TestJWT:
-    pass
+    def test_create_and_decode_token(self):
+        data = {"sub": "test_user", "role": "operator"}
+        token = create_access_token(data)
+        payload = decode_token(token)
+        assert payload is not None
+        assert payload["sub"] == "test_user"
+        assert payload["role"] == "operator"
