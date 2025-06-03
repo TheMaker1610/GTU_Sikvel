@@ -33,3 +33,4 @@ class TestSensorService:
         service = SensorService(noise_level=0.0, anomaly_probability=0.0)
         readings = service.poll()
         assert readings["rpm"] == pytest.approx(8000.0, rel=0.01)
+        assert readings["exhaust_temp"] == pytest.approx(650.0, rel=0.01)
