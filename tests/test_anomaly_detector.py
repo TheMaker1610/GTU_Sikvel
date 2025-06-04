@@ -49,3 +49,9 @@ class TestAnomalyDetector:
         r["exhaust_temp"] = 800
         sensors = [a["sensor"] for a in detector.detect(r, "NOMINAL")]
         assert "exhaust_temp" in sensors
+
+    def test_fuel_flow_anomaly_idle(self, detector):
+        r = {"rpm": 3000, "exhaust_temp": 400, "inlet_pressure": 120,
+             "fuel_flow": 900, "vibration": 2.0, "iga_position": 20}
+        sensors = [a["sensor"] for a in detector.detect(r, "IDLE")]
+        assert "fuel_flow" in sensors
