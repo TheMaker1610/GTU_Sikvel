@@ -40,3 +40,10 @@ def admin_token(client):
 def operator_token(client):
     resp = client.post("/token", data={"username": "testop", "password": "Op1234!"})
     return resp.json()["access_token"]
+
+
+class TestAuth:
+    def test_login_success(self, client):
+        resp = client.post("/token", data={"username": "testadmin", "password": "Test1234!"})
+        assert resp.status_code == 200
+        assert "access_token" in resp.json()
