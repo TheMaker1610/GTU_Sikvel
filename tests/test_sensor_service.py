@@ -35,4 +35,3 @@ class TestSensorService:
         assert readings["rpm"] == pytest.approx(8000.0, rel=0.01)
         assert readings["exhaust_temp"] == pytest.approx(650.0, rel=0.01)
         assert readings["fuel_flow"] == pytest.approx(2000.0, rel=0.01)
-# reviewed
