@@ -74,3 +74,11 @@ class TestUsers:
             headers={"Authorization": f"Bearer {admin_token}"},
         )
         assert resp.status_code == 200
+
+    def test_create_user_as_operator_forbidden(self, client, operator_token):
+        resp = client.post(
+            "/users",
+            json={"username": "another", "password": "Pass123!", "role": "operator"},
+            headers={"Authorization": f"Bearer {operator_token}"},
+        )
+        assert resp.status_code == 403
