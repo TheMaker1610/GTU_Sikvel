@@ -47,3 +47,11 @@ class TestAuth:
         resp = client.post("/token", data={"username": "testadmin", "password": "Test1234!"})
         assert resp.status_code == 200
         assert "access_token" in resp.json()
+
+    def test_login_wrong_password(self, client):
+        resp = client.post("/token", data={"username": "testadmin", "password": "wrong"})
+        assert resp.status_code == 401
+
+    def test_status_without_token(self, client):
+        resp = client.get("/status")
+        assert resp.status_code == 401
