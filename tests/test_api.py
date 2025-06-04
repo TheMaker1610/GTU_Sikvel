@@ -14,6 +14,8 @@ from server.auth.auth_service import hash_password
 def setup_db():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
+    if not db.query(User).filter(User.username == "testadmin").first():
+        db.add(User(username="testadmin", hashed_password=hash_password("Test1234!"), role="admin"))
     db.commit()
     db.close()
     yield
