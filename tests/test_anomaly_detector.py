@@ -23,3 +23,8 @@ def _start() -> dict:
         "rpm": 1495, "exhaust_temp": 174, "inlet_pressure": 109,
         "fuel_flow": 241, "vibration": 1.04, "iga_position": 37.4,
     }
+
+
+class TestAnomalyDetector:
+    def test_no_anomaly_nominal(self, detector):
+        assert detector.detect(_nominal(), "NOMINAL") == []
