@@ -64,3 +64,13 @@ class TestStatus:
         body = resp.json()
         assert "mode_label" in body
         assert "anomalies" in body
+
+
+class TestUsers:
+    def test_create_user_as_admin(self, client, admin_token):
+        resp = client.post(
+            "/users",
+            json={"username": "new_operator", "password": "NewOp123!", "role": "operator"},
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+        assert resp.status_code == 200
