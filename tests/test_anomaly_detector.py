@@ -43,3 +43,9 @@ class TestAnomalyDetector:
         r["rpm"] = 5000
         sensors = [a["sensor"] for a in detector.detect(r, "NOMINAL")]
         assert "rpm" in sensors
+
+    def test_temperature_above_range(self, detector):
+        r = _nominal()
+        r["exhaust_temp"] = 800
+        sensors = [a["sensor"] for a in detector.detect(r, "NOMINAL")]
+        assert "exhaust_temp" in sensors
