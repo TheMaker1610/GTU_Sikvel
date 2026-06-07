@@ -9,3 +9,7 @@ from server.auth.auth_service import (
     create_access_token,
     decode_token,
 )
+
+
+class TestPasswordHashing:
+    pass
