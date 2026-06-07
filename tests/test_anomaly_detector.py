@@ -55,3 +55,10 @@ class TestAnomalyDetector:
              "fuel_flow": 900, "vibration": 2.0, "iga_position": 20}
         sensors = [a["sensor"] for a in detector.detect(r, "IDLE")]
         assert "fuel_flow" in sensors
+
+    def test_anomaly_description_in_russian(self, detector):
+        r = _nominal()
+        r["vibration"] = 10.0
+        anomalies = detector.detect(r, "NOMINAL")
+        assert anomalies
+        assert "Вибрация" in anomalies[0]["description"]
