@@ -23,3 +23,9 @@ def _r(**kwargs) -> dict:
 class TestModeClassifier:
     def test_stop(self, classifier):
         assert classifier.classify(_r(rpm=0, fuel_flow=0)) == "STOP"
+
+    def test_start(self, classifier):
+        assert classifier.classify(_r(rpm=1500, fuel_flow=250)) == "START"
+
+    def test_idle(self, classifier):
+        assert classifier.classify(_r(rpm=3000, fuel_flow=500)) == "IDLE"
