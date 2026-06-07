@@ -37,3 +37,9 @@ class TestAnomalyDetector:
         r["vibration"] = 9.0
         sensors = [a["sensor"] for a in detector.detect(r, "NOMINAL")]
         assert "vibration" in sensors
+
+    def test_rpm_below_range(self, detector):
+        r = _nominal()
+        r["rpm"] = 5000
+        sensors = [a["sensor"] for a in detector.detect(r, "NOMINAL")]
+        assert "rpm" in sensors
