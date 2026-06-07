@@ -22,3 +22,9 @@ def setup_db():
     db.close()
     yield
     Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture(scope="module")
+def client():
+    app = create_app()
+    return TestClient(app)
