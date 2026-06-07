@@ -82,4 +82,3 @@ class TestUsers:
             headers={"Authorization": f"Bearer {operator_token}"},
         )
         assert resp.status_code == 403
-# reviewed
