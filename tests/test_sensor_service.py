@@ -12,4 +12,7 @@ def sensor_service():
 
 
 class TestSensorService:
-    pass
+    def test_poll_returns_all_sensors(self, sensor_service):
+        readings = sensor_service.poll()
+        for name in SENSOR_NAMES:
+            assert name in readings, f"Датчик {name} отсутствует в показаниях"
