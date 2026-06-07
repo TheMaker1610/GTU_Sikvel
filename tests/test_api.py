@@ -16,6 +16,8 @@ def setup_db():
     db = SessionLocal()
     if not db.query(User).filter(User.username == "testadmin").first():
         db.add(User(username="testadmin", hashed_password=hash_password("Test1234!"), role="admin"))
+    if not db.query(User).filter(User.username == "testop").first():
+        db.add(User(username="testop", hashed_password=hash_password("Op1234!"), role="operator"))
     db.commit()
     db.close()
     yield
