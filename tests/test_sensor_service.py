@@ -21,3 +21,10 @@ class TestSensorService:
         readings = sensor_service.poll()
         for name, value in readings.items():
             assert isinstance(value, float), f"Значение {name} не является числом"
+
+    def test_poll_values_positive(self, sensor_service):
+        for _ in range(5):
+            readings = sensor_service.poll()
+            assert readings["rpm"] > 0
+            assert readings["exhaust_temp"] > 0
+            assert readings["fuel_flow"] > 0
