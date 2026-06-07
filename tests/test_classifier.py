@@ -29,3 +29,9 @@ class TestModeClassifier:
 
     def test_idle(self, classifier):
         assert classifier.classify(_r(rpm=3000, fuel_flow=500)) == "IDLE"
+
+    def test_partial_load(self, classifier):
+        assert classifier.classify(_r(rpm=5500, fuel_flow=1000)) == "PARTIAL"
+
+    def test_nominal(self, classifier):
+        assert classifier.classify(_r(rpm=8000, fuel_flow=2000)) == "NOMINAL"
