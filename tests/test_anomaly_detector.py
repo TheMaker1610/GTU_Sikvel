@@ -62,3 +62,4 @@ class TestAnomalyDetector:
         anomalies = detector.detect(r, "NOMINAL")
         assert anomalies
         assert "Вибрация" in anomalies[0]["description"]
+
