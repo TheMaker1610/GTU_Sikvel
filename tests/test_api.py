@@ -34,3 +34,9 @@ def client():
 def admin_token(client):
     resp = client.post("/token", data={"username": "testadmin", "password": "Test1234!"})
     return resp.json()["access_token"]
+
+
+@pytest.fixture(scope="module")
+def operator_token(client):
+    resp = client.post("/token", data={"username": "testop", "password": "Op1234!"})
+    return resp.json()["access_token"]
