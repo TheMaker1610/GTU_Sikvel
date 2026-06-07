@@ -31,3 +31,9 @@ class TestAnomalyDetector:
 
     def test_no_anomaly_start_appendix1_values(self, detector):
         assert detector.detect(_start(), "START") == []
+
+    def test_vibration_anomaly_nominal(self, detector):
+        r = _nominal()
+        r["vibration"] = 9.0
+        sensors = [a["sensor"] for a in detector.detect(r, "NOMINAL")]
+        assert "vibration" in sensors
