@@ -25,3 +25,7 @@ class TestPasswordHashing:
         password = "my_password"
         hashed = hash_password(password)
         assert hashed != password
+
+
+class TestJWT:
+    pass
