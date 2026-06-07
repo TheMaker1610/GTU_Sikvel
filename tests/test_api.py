@@ -55,3 +55,12 @@ class TestAuth:
     def test_status_without_token(self, client):
         resp = client.get("/status")
         assert resp.status_code == 401
+
+
+class TestStatus:
+    def test_status_with_token(self, client, operator_token):
+        resp = client.get("/status", headers={"Authorization": f"Bearer {operator_token}"})
+        assert resp.status_code == 200
+        body = resp.json()
+        assert "mode_label" in body
+        assert "anomalies" in body
