@@ -28,3 +28,6 @@ def _start() -> dict:
 class TestAnomalyDetector:
     def test_no_anomaly_nominal(self, detector):
         assert detector.detect(_nominal(), "NOMINAL") == []
+
+    def test_no_anomaly_start_appendix1_values(self, detector):
+        assert detector.detect(_start(), "START") == []
