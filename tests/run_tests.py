@@ -8,3 +8,4 @@ if __name__ == "__main__":
         [sys.executable, "-m", "pytest", "tests/", "-v"],
         cwd=root,
     )
+    sys.exit(result.returncode)
