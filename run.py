@@ -38,6 +38,26 @@ def wait_for_server(process) -> bool:
     return False
 
 
+def _configure_qt_plugin_path():
+    if sys.platform != "win32":
+        return
+    if os.environ.get("QT_QPA_PLATFORM_PLUGIN_PATH"):
+        return
+    try:
+        import PyQt5
+    except ImportError:
+        return
+    pyqt_dir = os.path.dirname(PyQt5.__file__)
+    candidates = [
+        os.path.join(pyqt_dir, "Qt5", "plugins", "platforms"),
+        os.path.join(pyqt_dir, "Qt", "plugins", "platforms"),
+    ]
+    for path in candidates:
+        if os.path.isdir(path):
+            os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = path
+            return
+
+
 def start_server() -> subprocess.Popen:
     env = os.environ.copy()
 
@@ -77,6 +97,7 @@ def main():
         stop_server(server_process)
         sys.exit(1)
 
+    _configure_qt_plugin_path()
     from client.main import main as client_main
     client_main()
 
