@@ -15,15 +15,18 @@ class APIClient:
 
     def login(self, username: str, password: str) -> bool:
         try:
+            print(f"[APIClient] POST {BASE_URL}/token (user={username!r})")
             response = self._client.post(
                 "/token",
                 data={"username": username, "password": password},
             )
+            print(f"[APIClient] status={response.status_code} body={response.text[:200]}")
             if response.status_code == 200:
                 self._token = response.json()["access_token"]
                 return True
             return False
-        except httpx.RequestError:
+        except httpx.RequestError as exc:
+            print(f"[APIClient] RequestError: {type(exc).__name__}: {exc}")
             return False
 
     def logout(self) -> None:
