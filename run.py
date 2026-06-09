@@ -6,27 +6,34 @@
 import sys
 import os
 import time
+import socket
 import subprocess
-import urllib.request
-import urllib.error
 
-SERVER_URL = "http://127.0.0.1:8000/docs"
+SERVER_HOSTS = ("127.0.0.1", "localhost")
+SERVER_PORT = 8000
+WAIT_ATTEMPTS = 120
+WAIT_INTERVAL = 0.5
+
+
+def _port_open(host: str, port: int, timeout: float = 1.0) -> bool:
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
 
 
 def wait_for_server(process) -> bool:
     print("Ожидание запуска сервера", end="", flush=True)
-    for _ in range(30):
-        time.sleep(0.5)
+    for _ in range(WAIT_ATTEMPTS):
+        time.sleep(WAIT_INTERVAL)
         print(".", end="", flush=True)
         if process.poll() is not None:
             print("\nОшибка: сервер завершился неожиданно.")
             return False
-        try:
-            urllib.request.urlopen(SERVER_URL, timeout=1)
+        if any(_port_open(host, SERVER_PORT) for host in SERVER_HOSTS):
             print(" готово")
             return True
-        except urllib.error.URLError:
-            pass
     print(" таймаут")
     return False
 
