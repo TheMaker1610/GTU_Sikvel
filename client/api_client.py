@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 import logging
 from server.config.settings import SERVER_HOST, SERVER_PORT
 
-BASE_URL = f"http://{SERVER_HOST}:{SERVER_PORT}"
+BASE_URL = f"http://{SERVER_HOST}:{SERVER_PORT}" #Конфигурация
 logger = logging.getLogger(__name__)
 
 
@@ -23,7 +23,7 @@ class AuthenticationError(APIError):
 
 
 class APIClient:
-    def __init__(self, base_url: str = BASE_URL, timeout: float = 10.0):
+    def __init__(self, base_url: str = BASE_URL, timeout: float = 10.0): #Инициализация клиента
         self._token: Optional[str] = None
         self._base_url = base_url
         self._timeout = timeout
@@ -70,14 +70,14 @@ class APIClient:
         self._token = None
         logger.info("Logged out")
 
-    def _headers(self) -> Dict[str, str]:
+    def _headers(self) -> Dict[str, str]:  #Формирование заголовков
         """Формирование заголовков запроса."""
         headers = {"Accept": "application/json"}
         if self._token:
             headers["Authorization"] = f"Bearer {self._token}"
         return headers
 
-    def _handle_response(self, response: httpx.Response) -> Any:
+    def _handle_response(self, response: httpx.Response) -> Any: #Обработка ответов
         """Обработка ответа сервера."""
         if response.status_code == 401:
             self._token = None
@@ -101,7 +101,7 @@ class APIClient:
             logger.error(f"Failed to get status: {exc}")
             return None
 
-    def get_records(self, sensor: Optional[str] = None, limit: int = 100) -> Optional[List[Dict]]:
+    def get_records(self, sensor: Optional[str] = None, limit: int = 100) -> Optional[List[Dict]]: #Получение записей 
         """
         Получение записей с фильтрацией.
         
@@ -123,7 +123,7 @@ class APIClient:
             logger.error(f"Failed to get records: {exc}")
             return None
 
-    def force_mode(self, mode: str) -> bool:
+    def force_mode(self, mode: str) -> bool: #Управление режимом
         """
         Принудительная установка режима.
         
@@ -160,7 +160,7 @@ class APIClient:
             logger.error(f"Failed to get forced mode: {exc}")
             return None
 
-    def get_logs(self, lines: int = 200) -> Optional[List[str]]:
+    def get_logs(self, lines: int = 200) -> Optional[List[str]]: #Получение логов
         """
         Получение логов сервера.
         
@@ -189,13 +189,13 @@ class APIClient:
         async with httpx.AsyncClient(base_url=self._base_url, timeout=self._timeout) as client:
             yield client
 
-    def __enter__(self):
+    def __enter__(self): #Контекстный менеджер
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb): #Асинхронный клиент
         self.close()
 
-    def close(self):
+    def close(self): 
         """Закрытие HTTP-клиента."""
         self._client.close()
-        logger.info("Client closed")
+        logger.info("Client closed") #Логирование
