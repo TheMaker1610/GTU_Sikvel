@@ -3,93 +3,199 @@ HTTP-клиент для взаимодействия с сервером GTU An
 """
 
 import httpx
+from typing import Optional, List, Dict, Any
+from contextlib import asynccontextmanager
+import logging
 from server.config.settings import SERVER_HOST, SERVER_PORT
 
 BASE_URL = f"http://{SERVER_HOST}:{SERVER_PORT}"
+logger = logging.getLogger(__name__)
+
+
+class APIError(Exception):
+    """Базовое исключение для ошибок API."""
+    pass
+
+
+class AuthenticationError(APIError):
+    """Ошибка аутентификации."""
+    pass
 
 
 class APIClient:
-    def __init__(self):
-        self._token: str | None = None
-        self._client = httpx.Client(base_url=BASE_URL, timeout=10.0)
+    def __init__(self, base_url: str = BASE_URL, timeout: float = 10.0):
+        self._token: Optional[str] = None
+        self._base_url = base_url
+        self._timeout = timeout
+        self._client = httpx.Client(base_url=base_url, timeout=timeout)
 
     def login(self, username: str, password: str) -> bool:
+        """
+        Аутентификация пользователя.
+        
+        Args:
+            username: Имя пользователя
+            password: Пароль
+            
+        Returns:
+            bool: Успешность аутентификации
+            
+        Raises:
+            AuthenticationError: При ошибках аутентификации
+        """
         try:
-            print(f"[APIClient] POST {BASE_URL}/token (user={username!r})")
+            logger.info(f"Authenticating user: {username}")
             response = self._client.post(
                 "/token",
                 data={"username": username, "password": password},
             )
-            print(f"[APIClient] status={response.status_code} body={response.text[:200]}")
+            
             if response.status_code == 200:
                 self._token = response.json()["access_token"]
+                logger.info("Authentication successful")
                 return True
-            return False
+            elif response.status_code == 401:
+                logger.warning("Authentication failed: invalid credentials")
+                return False
+            else:
+                logger.error(f"Authentication failed with status {response.status_code}")
+                return False
+                
         except httpx.RequestError as exc:
-            print(f"[APIClient] RequestError: {type(exc).__name__}: {exc}")
-            return False
+            logger.error(f"Request error during authentication: {exc}")
+            raise AuthenticationError(f"Connection error: {exc}")
 
     def logout(self) -> None:
+        """Очистка токена аутентификации."""
         self._token = None
+        logger.info("Logged out")
 
-    def _headers(self) -> dict:
+    def _headers(self) -> Dict[str, str]:
+        """Формирование заголовков запроса."""
+        headers = {"Accept": "application/json"}
         if self._token:
-            return {"Authorization": f"Bearer {self._token}"}
-        return {}
+            headers["Authorization"] = f"Bearer {self._token}"
+        return headers
 
-    def get_status(self) -> dict | None:
+    def _handle_response(self, response: httpx.Response) -> Any:
+        """Обработка ответа сервера."""
+        if response.status_code == 401:
+            self._token = None
+            raise AuthenticationError("Token expired or invalid")
+        
+        if response.status_code >= 400:
+            error_msg = response.json().get("detail", response.text)
+            raise APIError(f"API error {response.status_code}: {error_msg}")
+        
+        if response.status_code == 204:
+            return None
+            
+        return response.json()
+
+    def get_status(self) -> Optional[Dict[str, Any]]:
+        """Получение статуса сервера."""
         try:
             response = self._client.get("/status", headers=self._headers())
-            if response.status_code == 200:
-                return response.json()
-            return None
-        except httpx.RequestError:
+            return self._handle_response(response)
+        except httpx.RequestError as exc:
+            logger.error(f"Failed to get status: {exc}")
             return None
 
-    def get_records(self, sensor: str | None = None, limit: int = 100) -> list | None:
+    def get_records(self, sensor: Optional[str] = None, limit: int = 100) -> Optional[List[Dict]]:
+        """
+        Получение записей с фильтрацией.
+        
+        Args:
+            sensor: Фильтр по датчику (опционально)
+            limit: Максимальное количество записей
+            
+        Returns:
+            Список записей или None при ошибке
+        """
         try:
-            params = {"limit": limit}
+            params = {"limit": min(limit, 1000)}  # Ограничение на максимальное значение
             if sensor:
                 params["sensor"] = sensor
+                
             response = self._client.get("/records", headers=self._headers(), params=params)
-            if response.status_code == 200:
-                return response.json()
-            return None
-        except httpx.RequestError:
+            return self._handle_response(response)
+        except httpx.RequestError as exc:
+            logger.error(f"Failed to get records: {exc}")
             return None
 
     def force_mode(self, mode: str) -> bool:
+        """
+        Принудительная установка режима.
+        
+        Args:
+            mode: Режим работы
+            
+        Returns:
+            bool: Успешность операции
+        """
+        valid_modes = ["normal", "auto", "manual"]
+        if mode not in valid_modes:
+            logger.warning(f"Invalid mode '{mode}'. Must be one of {valid_modes}")
+            return False
+            
         try:
             response = self._client.post(
                 "/mode/force",
                 params={"mode": mode},
                 headers=self._headers(),
             )
-            return response.status_code == 200
-        except httpx.RequestError:
+            self._handle_response(response)
+            return True
+        except (APIError, httpx.RequestError) as exc:
+            logger.error(f"Failed to force mode: {exc}")
             return False
 
-    def get_forced_mode(self) -> str | None:
+    def get_forced_mode(self) -> Optional[str]:
+        """Получение принудительного режима."""
         try:
             response = self._client.get("/mode/forced", headers=self._headers())
-            if response.status_code == 200:
-                return response.json().get("forced_mode")
-            return None
-        except httpx.RequestError:
+            data = self._handle_response(response)
+            return data.get("forced_mode")
+        except (APIError, httpx.RequestError) as exc:
+            logger.error(f"Failed to get forced mode: {exc}")
             return None
 
-    def get_logs(self, lines: int = 200) -> list | None:
+    def get_logs(self, lines: int = 200) -> Optional[List[str]]:
+        """
+        Получение логов сервера.
+        
+        Args:
+            lines: Количество строк лога
+            
+        Returns:
+            Список строк лога или None при ошибке
+        """
         try:
+            params = {"lines": min(lines, 1000)}  # Ограничение на максимальное значение
             response = self._client.get(
                 "/logs",
-                params={"lines": lines},
+                params=params,
                 headers=self._headers(),
             )
-            if response.status_code == 200:
-                return response.json().get("lines", [])
-            return None
-        except httpx.RequestError:
+            data = self._handle_response(response)
+            return data.get("lines", [])
+        except (APIError, httpx.RequestError) as exc:
+            logger.error(f"Failed to get logs: {exc}")
             return None
 
+    @asynccontextmanager
+    async def async_client(self):
+        """Контекстный менеджер для асинхронного клиента."""
+        async with httpx.AsyncClient(base_url=self._base_url, timeout=self._timeout) as client:
+            yield client
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
     def close(self):
+        """Закрытие HTTP-клиента."""
         self._client.close()
+        logger.info("Client closed")
